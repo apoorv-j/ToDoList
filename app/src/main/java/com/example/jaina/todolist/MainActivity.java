@@ -27,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private ListView list ;
     private ArrayList<String> words ;
     private ArrayAdapter adapter;
-
+    int j;
+    public static final String file_name = "TDLfile.txt";
     PrintStream output ;
     Scanner scan;
     @Override
@@ -50,14 +51,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1,android.R.id.text1,words);
         list.setAdapter(adapter);
 
-        try {
-            output = new PrintStream(openFileOutput("TDLfile.txt",MODE_APPEND));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        scan = new Scanner("TDLfile.txt");
-
 
         //Action on Add Button Click
         add.setOnClickListener(new View.OnClickListener() {
@@ -67,13 +60,10 @@ public class MainActivity extends AppCompatActivity {
 
                 words.add(word);
 
-                output.println(word);
-                output.close();
-
                 adapter.notifyDataSetChanged();
 
                 item.setText("");
-                //To hide virtual keyboard
+                //To hide virtual keyboard after addition of the word
                 InputMethodManager inputManager = (InputMethodManager)
                         getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -89,38 +79,40 @@ public class MainActivity extends AppCompatActivity {
                 String RemovedItem = parent.getItemAtPosition(position).toString();
                 words.remove(position);
                 adapter.notifyDataSetChanged();
-                PrintStream tempFile = null;
-                try {
-                    tempFile = new PrintStream(openFileOutput("temp.txt",MODE_PRIVATE));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                while(scan.hasNextLine())
-                {
-                    String temp= scan.nextLine();
-                    if(temp.equals(RemovedItem))
-                        continue;
-                    else
-                    {
-
-                        tempFile.println(temp);
-
-                    }
-
-                }
-                File TDL = new File("TDLfile.txt");
-                File temp = new File("temp.txt");
-                if(TDL.delete())
-                    temp.renameTo(TDL);
                 Toast.makeText(getApplicationContext(),"Removed : "+RemovedItem,Toast.LENGTH_LONG).show();
-
                 return false;
             }
         });
 
+    }
+
+    //to add words in a file
+    protected void onPause()
+    {
+        super.onPause();
+        try {
+            output = new PrintStream(openFileOutput(file_name,MODE_PRIVATE));
+            for(j=0; j<words.size();j++)
+                output.println(words.get(j));
+            output.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
     }
 
-
+    //to get words from the file
+    protected void onResume()
+    {
+        super.onResume();
+        scan = new Scanner(file_name);
+        while (scan.hasNextLine())
+        {
+            String line=scan.nextLine();
+            words.add(line);
+            adapter.notifyDataSetChanged();
+        }
+        scan.close();
+    }
 
 }
