@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String file_name = "TDLfile.txt";
     PrintStream output ;
     Scanner scan;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //to add words in a file
+    @Override
     protected void onPause()
     {
         super.onPause();
@@ -102,17 +105,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //to get words from the file
+    @Override
     protected void onResume()
     {
+
         super.onResume();
-        scan = new Scanner(file_name);
-        while (scan.hasNextLine())
-        {
-            String line=scan.nextLine();
-            words.add(line);
+
+        try {
+            scan = new Scanner(openFileInput(file_name));
+            while (scan.hasNextLine())
+            {
+                String line=scan.nextLine();
+                words.add(line);
+
+            }
+            scan.close();
             adapter.notifyDataSetChanged();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
-        scan.close();
+
     }
 
 }
